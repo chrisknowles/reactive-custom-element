@@ -1,0 +1,33 @@
+{
+  "name": "reactive-custom-element",
+  "version": "0.0.1",
+  "description": "Operations for managing an array of objects.",
+  "main": "dist/index.js",
+  "module": "src/index.js",
+  "scripts": {
+    "build": "rollup -c && rollup -c ./rollup.min.config.js",
+    "test": "babel-tape-runner ./tests/**/*.js | tap-difflet"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chrisknowles/reactive-custom-element.git"
+  },
+  "keywords": [
+    "store",
+    "reactive"
+  ],
+  "author": "Chris Knowles <chris@chrisknowles.co>",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.3.3",
+    "@babel/preset-env": "^7.3.1",
+    "babel-tape-runner": "^3.0.0",
+    "rollup": "^1.2.2",
+    "rollup-plugin-butternut": "^0.1.0",
+    "tap-difflet": "^0.7.1",
+    "tape": "^4.10.1"
+  },
+  "dependencies": {
+    "lit-html": "^1.0.0"
+  }
+}

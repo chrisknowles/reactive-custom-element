@@ -1,0 +1,4 @@
+tests/
+rollup.config.js
+rollup.min.config.js
+.babelrc
