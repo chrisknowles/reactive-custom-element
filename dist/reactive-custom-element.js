@@ -1,10 +1,10 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-html'), require('reactive-data-store')) :
   typeof define === 'function' && define.amd ? define(['exports', 'lit-html', 'reactive-data-store'], factory) :
-  (factory((global.ReactiveCustomElement = {}),global.litHtml,global.reactiveDataStore));
-}(this, (function (exports,litHtml,reactiveDataStore) { 'use strict';
+  (global = global || self, factory(global.ReactiveCustomElement = {}, global.litHtml, global.reactiveDataStore));
+}(this, function (exports, litHtml, reactiveDataStore) { 'use strict';
 
-  let STYLESHEETS;
+  let STYLESHEETS_ROOT_DIR = '';
 
   function isObject(value) {
     return value != null &&
@@ -56,7 +56,6 @@
 
     disconnectedCallback() {
       this.events.forEach(fn => fn());
-      this.unsubscribeFromAllStores();
     }
 
     /**
@@ -205,9 +204,13 @@
       this.stylesheets.map(stylesheet => {
         const elm = document.createElement('link');
         elm.setAttribute('rel', 'stylesheet');
-        elm.setAttribute('href', STYLESHEETS[stylesheet]);
+        elm.setAttribute('href', STYLESHEETS_ROOT_DIR + stylesheet + '.css');
         this.root.appendChild(elm);
       });
+    }
+
+    preRenderCheck() {
+      return true;
     }
 
     /**
@@ -215,6 +218,9 @@
      * It adds styles and stylesheet links if they exist
      */
     render() {
+      if (!this.preRenderCheck()) {
+        return ``;
+      }
       this.beforeRender();
       const tpl = this.template() || this.html``;
       this.renderTemplate(tpl, this.root);
@@ -235,11 +241,6 @@
     }
 
     /**
-     * Called before the elements data is updated
-     */
-    beforeUpdate() {}
-
-    /**
      * called before the element is rendered
      */
     beforeRender() {}
@@ -258,9 +259,9 @@
 
   }
 
-  CustomElement.setStylesheets = stylesheets => {
-    STYLESHEETS = stylesheets;
-  };
+  function setStylesheetsRoot(dir) {
+    STYLESHEETS_ROOT_DIR = dir;
+  }
 
   /**
    * Debug mode
@@ -293,6 +294,11 @@
       return this[DATA];
     }
 
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this.unsubscribeFromAllStores();
+    }
+
     attributeChangedCallback(attr) {
       if (attr === 'data-store') {
         this.setStore();
@@ -304,6 +310,11 @@
     // Data
     // ---------------------------------------------------------
 
+    /**
+     * Called before the elements data is updated
+     */
+    beforeUpdate() {}
+
     updateData(name) {
       return (data, error, complete) => {
         this.beforeUpdate();
@@ -312,7 +323,9 @@
           : this.data = data;
         this.render();
         if (DEBUG) {
-          console.log.orange(this.tagName.substr(4).toLowerCase());
+          setTimeout(() => {
+            console.log(`%c🍊  ${this.tagName.toLowerCase()} re-rendered`, `color: #E67E22;line-height:1;`);
+          }, 1100);
         }
       };
     }
@@ -347,8 +360,9 @@
      */
     subscribeToStore(data, dorender = false) {
       let {name, store, storePath, just, not} = data;
-      this.unsubscribeFromStore(name);
-      this.subscriptions[name] = reactiveDataStore.Store(store).subscribe({
+      const tagname = this.tagName.replace('-', '');
+      this.unsubscribeFromStore(name || tagname);
+      this.subscriptions[name || tagname] = reactiveDataStore.Store(store).subscribe({
         callback: this.updateData(name).bind(this),
         storePath,
         just,
@@ -382,9 +396,11 @@
     }
 
     unsubscribeFromAllStores() {
-      if (this.subscriptions.length) {
-        this.subscriptions.map(sub => sub.unsubscribe());
-        this.subscriptions = [];
+      if (Object.keys(this.subscriptions)) {
+        Object.values(this.subscriptions).map(sub => {
+          sub.unsubscribe();
+        });
+        this.subscriptions = {};
       }
     }
 
@@ -395,8 +411,9 @@
   };
 
   exports.CustomElement = CustomElement;
+  exports.setStylesheetsRoot = setStylesheetsRoot;
   exports.ReactiveCustomElement = ReactiveCustomElement;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));

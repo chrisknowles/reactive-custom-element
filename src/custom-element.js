@@ -1,6 +1,6 @@
 import {html, render} from 'lit-html';
 
-let STYLESHEETS;
+let STYLESHEETS_ROOT_DIR = '';
 
 function isObject(value) {
   return value != null &&
@@ -200,7 +200,7 @@ export class CustomElement extends HTMLElement {
     this.stylesheets.map(stylesheet => {
       const elm = document.createElement('link');
       elm.setAttribute('rel', 'stylesheet');
-      elm.setAttribute('href', STYLESHEETS[stylesheet]);
+      elm.setAttribute('href', STYLESHEETS_ROOT_DIR + stylesheet + '.css');
       this.root.appendChild(elm);
     });
   }
@@ -255,6 +255,6 @@ export class CustomElement extends HTMLElement {
 
 }
 
-CustomElement.setStylesheets = stylesheets => {
-  STYLESHEETS = stylesheets;
-};
+export function setStylesheetsRoot(dir) {
+  STYLESHEETS_ROOT_DIR = dir;
+}
